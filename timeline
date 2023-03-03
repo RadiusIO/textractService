@@ -1,0 +1,19 @@
+| Haupttask        | Sub-Task                | Schätzung | Aufwand |
+| Plannungsphase   | Roadmap                 | 0,5h      | 20m     |
+| Risikomanagement | FMEA                    | 1h        |         |
+| Recherche        | REST File Upload        | 0,25h     |         |
+|                  | Docker image mit Spring | 0,5h      |         |
+|                  | REST mit Sprint         | 0,5h      |         |
+|                  | textract API            | 0,5h      |         |
+| Umsetzung        | Docker image mit Spring | 1,5h      |         |
+|                  | REST mit Sprint         | 1h        |         |
+|                  | textract API            | 1h        |         |
+|                  | REST File Upload        | 0,5h      |         |
+|                  | Handling Secrets        | 0,5h      |         |
+|                  | Error handling          | 1h        |         |
+|                  | Readme                  | 0,25h     |         |
+| Testing          | End-2-End               | 1h        |         |
+|                  | Skalierbarkeit          | 0,5h      |         |
+|                  | False-Positiv           | 0,5h      |         |
+| Erweiterungen    | Unit-Tests              | 3h        |         |
+|                  | Pagination              | 2h        |         |
