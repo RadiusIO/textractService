@@ -9,10 +9,7 @@
 
 package me.cgrader.textract;
 
-// snippet-start:[textract.java2._analyze_doc.import]
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.textract.TextractClient;
 import software.amazon.awssdk.services.textract.model.*;
 
@@ -23,7 +20,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-// snippet-end:[textract.java2._analyze_doc.import]
 
 /**
  * Before running this Java V2 code example, set up your development environment, including your credentials.
@@ -34,35 +30,6 @@ import java.util.List;
  */
 public class AnalyzeDocument {
 
-    public static void main(String[] args) {
-
-        String sourceDoc;
-        final String usage = "\n" +
-                "Usage:\n" +
-                "    <sourceDoc> \n\n" +
-                "Where:\n" +
-                "    sourceDoc - The path where the document is located (must be an image, for example, C:/AWS/book.png). \n";
-
-//        if (args.length != 1) {
-//            System.out.println(usage);
-//            System.exit(1);
-//        }
-
-//        sourceDoc = args[0];
-//        sourceDoc = "./testfiles/bermuda.png";
-//        sourceDoc = "./testfiles/sciencepaper.png";
-        sourceDoc = "./testfiles/diagram.jpeg";
-        Region region = Region.US_EAST_2;
-        TextractClient textractClient = TextractClient.builder()
-                .region(region)
-                .credentialsProvider(ProfileCredentialsProvider.create())
-                .build();
-
-        analyzeDoc(textractClient, sourceDoc);
-        textractClient.close();
-    }
-
-    // snippet-start:[textract.java2._analyze_doc.main]
     public static void analyzeDoc(TextractClient textractClient, String sourceDoc) {
 
         try {
@@ -103,5 +70,4 @@ public class AnalyzeDocument {
             System.exit(1);
         }
     }
-    // snippet-end:[textract.java2._analyze_doc.main]
 }
