@@ -13,12 +13,12 @@ import me.cgrader.storage.StorageFileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import software.amazon.awssdk.services.textract.TextractClient;
 
 import static me.cgrader.textract.AnalyzeDocument.analyzeDoc;
@@ -36,12 +36,12 @@ public class FileUploadController {
         this.textractClient = textractClient;
     }
 
-    @GetMapping("/health")
+    @GetMapping(path = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> healthcheck() {
         return ResponseEntity.ok().body("{\"DES health check\":\"okay\"}");
     }
 
-    @GetMapping("/")
+    @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<String> listUploadedFiles(Model model) throws IOException {
 
@@ -61,10 +61,10 @@ public class FileUploadController {
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);
     }
 
-    @PostMapping("/image")
+    @PostMapping(path = "/image", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
 
-        SortedMap<String, String> responseMap = new TreeMap<>();
+        SortedMap<String, Object> responseMap = new TreeMap<>();
         responseMap.put("filename", file.getOriginalFilename());
 
         if (file.isEmpty() || file.getSize() == 0) {
@@ -78,7 +78,7 @@ public class FileUploadController {
                 if (list == null) {
                     responseMap.put("Error", "Could not extract text from given file");
                 } else {
-                    responseMap.put("exractedText", list.toString());
+                    responseMap.put("exractedText", list);
                 }
             } else {
                 responseMap.put("Error", "Uploaded file type not supported, only jpg/png are allowed");
