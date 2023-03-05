@@ -62,8 +62,7 @@ public class FileUploadController {
     }
 
     @PostMapping("/image")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
-                                                   RedirectAttributes redirectAttributes) {
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
 
         SortedMap<String, String> responseMap = new TreeMap<>();
         responseMap.put("filename", file.getOriginalFilename());
@@ -73,8 +72,6 @@ public class FileUploadController {
         } else {
             if (verifyAllowedFileTypes(file.getContentType().toLowerCase())) {
                 storageService.store(file);
-                redirectAttributes.addFlashAttribute("message",
-                        "You successfully uploaded " + file.getOriginalFilename() + "!");
                 System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
                 List list = analyzeDoc(textractClient, this.storageService.getRootLocation().toString() + "/" + file.getOriginalFilename());
 
