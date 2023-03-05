@@ -2,6 +2,7 @@ package me.cgrader;
 
 import java.io.IOException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import me.cgrader.storage.IStorageService;
 import me.cgrader.storage.StorageFileNotFoundException;
@@ -32,19 +33,19 @@ public class FileUploadController {
     }
 
     @GetMapping("/health")
-    public String healthcheck() {
-        return "{\"DES health check\":\"okay\"}";
+    public ResponseEntity<String> healthcheck() {
+        return ResponseEntity.ok().body("{\"DES health check\":\"okay\"}");
     }
 
     @GetMapping("/")
-    public String listUploadedFiles(Model model) throws IOException {
+    @ResponseBody
+    public ResponseEntity<String> listUploadedFiles(Model model) throws IOException {
 
-        model.addAttribute("files", storageService.loadAll().map(
-                        path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-                                "serveFile", path.getFileName().toString()).build().toUri().toString())
-                .collect(Collectors.toList()));
+        Stream<String> filelist = storageService.loadAll().map(
+                path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
+                        "serveFile", path.getFileName().toString()).build().toUri().toString());
 
-        return "uploadForm";
+        return ResponseEntity.ok().body("{\"File list\":\"" + filelist.collect(Collectors.toList()) + "\"}");
     }
 
     @GetMapping("/files/{filename:.+}")
@@ -57,11 +58,11 @@ public class FileUploadController {
     }
 
     @PostMapping("/image")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
-                                   RedirectAttributes redirectAttributes) {
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
+                                                   RedirectAttributes redirectAttributes) {
 
         if(file.isEmpty() || file.getSize()==0) {
-            return "{\"Error\":\"Uploaded file is empty\"}";
+            return ResponseEntity.ok().body("{\"Error\":\"Uploaded file is empty\"}");
         } else {
             if (verifyAllowedFileTypes(file.getContentType().toLowerCase())) {
                 storageService.store(file);
@@ -69,9 +70,9 @@ public class FileUploadController {
                         "You successfully uploaded " + file.getOriginalFilename() + "!");
                 System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!" );
                 analyzeDoc(textractClient, this.storageService.getRootLocation().toString() + "/" + file.getOriginalFilename());
-                return "redirect:/";
+                return ResponseEntity.ok().body("TODO");
             } else {
-                return "{\"Error\":\"Uploaded file type not supported, only jpg/png are allowed\"}";
+                return ResponseEntity.ok().body("{\"Error\":\"Uploaded file type not supported, only jpg/png are allowed\"}");
             }
         }
     }
