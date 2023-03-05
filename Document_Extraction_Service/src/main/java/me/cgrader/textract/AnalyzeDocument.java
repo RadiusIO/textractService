@@ -13,27 +13,21 @@ import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.textract.TextractClient;
 import software.amazon.awssdk.services.textract.model.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
  * Before running this Java V2 code example, set up your development environment, including your credentials.
- *
  * For more information, see the following documentation topic:
- *
  * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/get-started.html
  */
 public class AnalyzeDocument {
 
-    public static void analyzeDoc(TextractClient textractClient, String sourceDoc) {
+    public static List analyzeDoc(TextractClient textractClient, String sourceDoc) {
 
-        try {
-            InputStream sourceStream = new FileInputStream(new File(sourceDoc));
+        List<String> list = new ArrayList<>();
+
+        try (InputStream sourceStream = new FileInputStream(sourceDoc)) {
             SdkBytes sourceBytes = SdkBytes.fromInputStream(sourceStream);
 
             // Get the input Document object as bytes
@@ -41,7 +35,7 @@ public class AnalyzeDocument {
                     .bytes(sourceBytes)
                     .build();
 
-            List<FeatureType> featureTypes = new ArrayList<FeatureType>();
+            List<FeatureType> featureTypes = new ArrayList<>();
             featureTypes.add(FeatureType.FORMS);
             featureTypes.add(FeatureType.TABLES);
 
@@ -54,20 +48,20 @@ public class AnalyzeDocument {
             List<Block> docInfo = analyzedDocument.blocks();
             Iterator<Block> blockIterator = docInfo.iterator();
 
-            while(blockIterator.hasNext()) {
+            while (blockIterator.hasNext()) {
                 Block block = blockIterator.next();
 //                System.out.println("The block type is " +block.blockType().toString());
                 if (block.blockType().equals(BlockType.LINE)) {
-                    System.out.println(block.text());
+                    list.add(block.text());
                 }
             }
 
             DocumentMetadata documentMetadata = analyzedDocument.documentMetadata();
-            System.out.println("The number of pages in the document is " +documentMetadata.pages());
+            System.out.println("The number of pages in the document is " + documentMetadata.pages());
 
-        } catch (TextractException | FileNotFoundException e) {
+        } catch (TextractException | IOException e) {
             System.err.println(e.getMessage());
-            System.exit(1);
         }
+        return list;
     }
 }

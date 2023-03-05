@@ -1,9 +1,13 @@
 package me.cgrader;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import me.cgrader.storage.IStorageService;
 import me.cgrader.storage.StorageFileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,19 +65,32 @@ public class FileUploadController {
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
                                                    RedirectAttributes redirectAttributes) {
 
-        if(file.isEmpty() || file.getSize()==0) {
+        SortedMap<String, String> responseMap = new TreeMap<>();
+        responseMap.put("filename", file.getOriginalFilename());
+
+        if (file.isEmpty() || file.getSize() == 0) {
             return ResponseEntity.ok().body("{\"Error\":\"Uploaded file is empty\"}");
         } else {
             if (verifyAllowedFileTypes(file.getContentType().toLowerCase())) {
                 storageService.store(file);
                 redirectAttributes.addFlashAttribute("message",
                         "You successfully uploaded " + file.getOriginalFilename() + "!");
-                System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!" );
-                analyzeDoc(textractClient, this.storageService.getRootLocation().toString() + "/" + file.getOriginalFilename());
-                return ResponseEntity.ok().body("TODO");
+                System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
+                List list = analyzeDoc(textractClient, this.storageService.getRootLocation().toString() + "/" + file.getOriginalFilename());
+
+                if (list == null) {
+                    responseMap.put("Error", "Could not extract text from given file");
+                } else {
+                    responseMap.put("exractedText", list.toString());
+                }
             } else {
-                return ResponseEntity.ok().body("{\"Error\":\"Uploaded file type not supported, only jpg/png are allowed\"}");
+                responseMap.put("Error", "Uploaded file type not supported, only jpg/png are allowed");
             }
+
+            Gson gson = new Gson();
+            Type gsonType = new TypeToken<HashMap>(){}.getType();
+            String gsonString = gson.toJson(responseMap, gsonType);
+            return ResponseEntity.ok().body(gsonString);
         }
     }
 
