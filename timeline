@@ -21,3 +21,12 @@
 |                  | Pagination              | 2h        |         |
 |                  | Restrict File Types     | 0,5h      | 0,5h    |
 |                  | Optimierungen           | ~         | 2,5h    |
+
+
+# docker
+docker build -t document-extraction-service:latest .
+docker run -p 8083:8083 -v ~/.aws/credentials:/root/.aws/credentials:ro document-extraction-service
+
+# test with curl
+curl -s -X POST --form "file=@testfiles/diagram.jpeg" http://localhost:8083/api/v1/image | jq
+curl -s -X GET http://localhost:8083/api/v1/ | jq

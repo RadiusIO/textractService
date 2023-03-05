@@ -11,7 +11,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>me.cgrader</groupId>
-    <artifactId>Document_Extraction_Service</artifactId>
+    <artifactId>document-extraction-service</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -37,6 +37,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+                </configuration>
             </plugin>
         </plugins>
     </build>
