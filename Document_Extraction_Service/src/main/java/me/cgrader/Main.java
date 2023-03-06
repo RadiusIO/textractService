@@ -11,8 +11,6 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.textract.TextractClient;
 
-import static me.cgrader.textract.AnalyzeDocument.analyzeDoc;
-
 @SpringBootApplication
 @EnableConfigurationProperties(StorageProperties.class)
 public class Main {

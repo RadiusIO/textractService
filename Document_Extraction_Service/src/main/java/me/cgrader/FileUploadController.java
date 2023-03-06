@@ -1,15 +1,11 @@
 package me.cgrader;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import me.cgrader.storage.IStorageService;
 import me.cgrader.storage.StorageFileNotFoundException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +17,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import software.amazon.awssdk.services.textract.TextractClient;
 
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static me.cgrader.textract.AnalyzeDocument.analyzeDoc;
 
 @RestController
@@ -29,6 +33,7 @@ public class FileUploadController {
 
     private final IStorageService storageService;
     private final TextractClient textractClient;
+    Logger logger = LogManager.getLogger(FileUploadController.class);
 
     @Autowired
     public FileUploadController(IStorageService storageService, TextractClient textractClient) {
@@ -43,7 +48,7 @@ public class FileUploadController {
 
     @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<String> listUploadedFiles(Model model) throws IOException {
+    public ResponseEntity<String> listUploadedFiles(Model model) {
 
         Stream<String> filelist = storageService.loadAll().map(
                 path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
@@ -72,20 +77,26 @@ public class FileUploadController {
         } else {
             if (verifyAllowedFileTypes(file.getContentType().toLowerCase())) {
                 storageService.store(file);
-                System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
+                this.logger.info("You successfully uploaded " + file.getOriginalFilename() + "!");
                 List list = analyzeDoc(textractClient, this.storageService.getRootLocation().toString() + "/" + file.getOriginalFilename());
 
                 if (list == null) {
-                    responseMap.put("Error", "Could not extract text from given file");
+                    this.logger.error("An error occurred while trying to extract text from file: " + file.getOriginalFilename());
+                    responseMap.put("Error", "An error occurred while trying to extract text from file");
+                } else if (list.isEmpty()) {
+                    this.logger.debug("Could not extract any text from given file: " + file.getOriginalFilename());
+                    responseMap.put("Error", "Could not extract any text from given file");
                 } else {
-                    responseMap.put("exractedText", list);
+                    this.logger.debug("Successfully extracted text from given file: " + file.getOriginalFilename());
+                    responseMap.put("extractedText", list);
                 }
             } else {
+                this.logger.error("Uploaded file type not supported, only jpg/png are allowed: " + file.getOriginalFilename() + " " + file.getContentType().toLowerCase());
                 responseMap.put("Error", "Uploaded file type not supported, only jpg/png are allowed");
             }
 
             Gson gson = new Gson();
-            Type gsonType = new TypeToken<HashMap>(){}.getType();
+            Type gsonType = new TypeToken<HashMap>() { }.getType();
             String gsonString = gson.toJson(responseMap, gsonType);
             return ResponseEntity.ok().body(gsonString);
         }
@@ -103,6 +114,7 @@ public class FileUploadController {
 
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
+        this.logger.error(exc.getMessage());
         return ResponseEntity.notFound().build();
     }
 

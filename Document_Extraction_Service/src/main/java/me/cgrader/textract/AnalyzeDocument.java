@@ -9,6 +9,8 @@
 
 package me.cgrader.textract;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.textract.TextractClient;
 import software.amazon.awssdk.services.textract.model.*;
@@ -22,6 +24,7 @@ import java.util.*;
  * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/get-started.html
  */
 public class AnalyzeDocument {
+    static Logger logger = LogManager.getLogger(AnalyzeDocument.class);
 
     public static List analyzeDoc(TextractClient textractClient, String sourceDoc) {
 
@@ -50,17 +53,17 @@ public class AnalyzeDocument {
 
             while (blockIterator.hasNext()) {
                 Block block = blockIterator.next();
-//                System.out.println("The block type is " +block.blockType().toString());
+                logger.debug("The block type is " +block.blockType().toString());
                 if (block.blockType().equals(BlockType.LINE)) {
                     list.add(block.text());
                 }
             }
 
             DocumentMetadata documentMetadata = analyzedDocument.documentMetadata();
-            System.out.println("The number of pages in the document is " + documentMetadata.pages());
+            logger.info("The number of pages in the document is " + documentMetadata.pages());
 
         } catch (TextractException | IOException e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
         }
         return list;
     }
