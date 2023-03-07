@@ -1,4 +1,4 @@
-package me.cgrader;
+package me.cgrader.rest.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -29,14 +29,14 @@ import static me.cgrader.textract.AnalyzeDocument.analyzeDoc;
 
 @RestController
 @RequestMapping("/api/v1")
-public class FileUploadController {
+public class FileUploadRESTController {
 
     private final IStorageService storageService;
     private final TextractClient textractClient;
-    Logger logger = LogManager.getLogger(FileUploadController.class);
+    Logger logger = LogManager.getLogger(FileUploadRESTController.class);
 
     @Autowired
-    public FileUploadController(IStorageService storageService, TextractClient textractClient) {
+    public FileUploadRESTController(IStorageService storageService, TextractClient textractClient) {
         this.storageService = storageService;
         this.textractClient = textractClient;
     }
@@ -51,7 +51,7 @@ public class FileUploadController {
     public ResponseEntity<String> listUploadedFiles(Model model) {
 
         Stream<String> filelist = storageService.loadAll().map(
-                path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
+                path -> MvcUriComponentsBuilder.fromMethodName(FileUploadRESTController.class,
                         "serveFile", path.getFileName().toString()).build().toUri().toString());
 
         return ResponseEntity.ok().body("{\"File list\":\"" + filelist.collect(Collectors.toList()) + "\"}");
